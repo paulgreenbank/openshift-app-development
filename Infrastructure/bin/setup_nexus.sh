@@ -16,18 +16,6 @@ oc project ${GUID}-nexus
 # Setup Nexus ImageStream for build
 oc import-image nexus3 --from=sonatype/nexus3 --confirm
 
-# Create PersistentVolumeClaim for Nexus data
-echo "apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nexus-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 4Gi" | oc create -f -
-
 # Process template and create environment
 sed "s/GUID/${GUID}/g" ../templates/nexus_template_build.yaml | oc process -f - | oc create -f -
 

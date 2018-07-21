@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Template
 metadata:
   creationTimestamp: null
-  name: GUID-nexus3-build
+  name: sonarqube-application-build
 objects:
 - apiVersion: v1
   kind: DeploymentConfig
@@ -12,14 +12,16 @@ objects:
     creationTimestamp: null
     generation: 1
     labels:
-      app: nexus3
-    name: nexus3
+      app: sonarqube
+      role: application
+      component: infrastructure
+    name: sonarqube
   spec:
     replicas: 1
     revisionHistoryLimit: 10
     selector:
-      app: nexus3
-      deploymentconfig: nexus3
+      app: sonarqube
+      deploymentconfig: sonarqube 
     strategy:
       activeDeadlineSeconds: 21600
       recreateParams:
@@ -38,66 +40,91 @@ objects:
           openshift.io/generated-by: OpenShiftNewApp
         creationTimestamp: null
         labels:
-          app: nexus3
-          deploymentconfig: nexus3
+          app: sonarqube
+          role: application
+          component: infrastructure
+          deploymentconfig: sonarqube
       spec:
         containers:
-        - image: docker.io/sonatype/nexus3@sha256:c46f74741401ed538e94cc51a272a95efef5db60a9091d95f93d339fd09fa219
-          imagePullPolicy: Always
+        - env:
+          - name: SONARQUBE_JDBC_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: DATABASE_PASSWORD
+                name: sonar-secrets
+          - name: SONARQUBE_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: DATABASE_NAME
+                name: sonar-secrets
+          - name: SONARQUBE_JDBC_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: DATABASE_USER
+                name: sonar-secrets
+          - name: SONARQUBE_JDBC_URL
+            valueFrom:
+              secretKeyRef:
+                key: JDBC_URL
+                name: sonar-secrets
+          image: docker.io/wkulhanek/sonarqube@sha256:8881232a1cd5636768df366eb8803255276618bf6252b01516c0a70bcaaf4943
+          imagePullPolicy: IfNotPresent
           livenessProbe:
             exec:
               command:
               - echo
               - alive
             failureThreshold: 3
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
-          name: nexus3
+          name: sonarqube
           ports:
-          - containerPort: 8081
+          - containerPort: 9000
             protocol: TCP
           readinessProbe:
             failureThreshold: 3
             httpGet:
-              path: /repository/maven-public/
-              port: 8081
+              path: /about
+              port: 9000
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
           resources:
             limits:
-              memory: 2Gi
+              cpu: "2"
+              memory: 3Gi
             requests:
-              memory: 1Gi
+              cpu: "1"
+              memory: 1536Mi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-          - mountPath: /nexus-data
-            name: nexus3-volume-1
+          - mountPath: /opt/sonarqube/data
+            name: sonarqube-volume-1
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - name: nexus3-volume-1
+        - name: sonarqube-volume-1
           persistentVolumeClaim:
-            claimName: nexus-pvc
+            claimName: sonarqube-pvc
     test: false
     triggers:
     - type: ConfigChange
     - imageChangeParams:
         automatic: true
         containerNames:
-        - nexus3
+        - sonarqube
         from:
           kind: ImageStreamTag
-          name: nexus3:latest
-          namespace: GUID-nexus
+          name: sonarqube:6.7.4
+          namespace: GUID-sonarqube
       type: ImageChange
   status:
     availableReplicas: 0
@@ -109,7 +136,7 @@ objects:
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
-    name: nexus-pvc
+    name: sonarqube-pvc
   spec:
     accessModes:
     - ReadWriteOnce
@@ -122,73 +149,29 @@ objects:
     annotations:
       openshift.io/host.generated: "true"
     creationTimestamp: null
-    name: nexus3-registry
+    labels:
+      app: sonarqube
+      role: application-route
+      component: infrastructure
+    name: sonarqube
   spec:
-    host: nexus3-registry-GUID-nexus.apps.wlg.example.opentlc.com
+    host: sonarqube-GUID-sonarqube.apps.wlg.example.opentlc.com
     port:
-      targetPort: 5000
-    tls:
-      termination: edge
+      targetPort: 9000-tcp
     to:
       kind: Service
-      name: nexus3-registry
+      name: sonarqube
       weight: 100
     wildcardPolicy: None
   status:
     ingress:
     - conditions:
-      - lastTransitionTime: 2018-07-18T00:46:53Z
+      - lastTransitionTime: 2018-07-18T02:12:30Z
         status: "True"
         type: Admitted
-      host: nexus3-registry-GUID-nexus.apps.wlg.example.opentlc.com
+      host: sonarqube-GUID-sonarqube.apps.wlg.example.opentlc.com
       routerName: router
       wildcardPolicy: None
-- apiVersion: v1
-  kind: Route
-  metadata:
-    annotations:
-      openshift.io/host.generated: "true"
-    creationTimestamp: null
-    labels:
-      app: nexus3
-    name: nexus3
-  spec:
-    host: nexus3-GUID-nexus.apps.wlg.example.opentlc.com
-    port:
-      targetPort: 8081-tcp
-    to:
-      kind: Service
-      name: nexus3
-      weight: 100
-    wildcardPolicy: None
-  status:
-    ingress:
-    - conditions:
-      - lastTransitionTime: 2018-07-18T00:33:09Z
-        status: "True"
-        type: Admitted
-      host: nexus3-GUID-nexus.apps.wlg.example.opentlc.com
-      routerName: router
-      wildcardPolicy: None
-- apiVersion: v1
-  kind: Service
-  metadata:
-    creationTimestamp: null
-    labels:
-      app: nexus3
-    name: nexus3-registry
-  spec:
-    ports:
-    - port: 5000
-      protocol: TCP
-      targetPort: 5000
-    selector:
-      app: nexus3
-      deploymentconfig: nexus3
-    sessionAffinity: None
-    type: ClusterIP
-  status:
-    loadBalancer: {}
 - apiVersion: v1
   kind: Service
   metadata:
@@ -196,17 +179,19 @@ objects:
       openshift.io/generated-by: OpenShiftNewApp
     creationTimestamp: null
     labels:
-      app: nexus3
-    name: nexus3
+      app: sonarqube
+      role: application-service
+      component: infrastructure
+    name: sonarqube
   spec:
     ports:
-    - name: 8081-tcp
-      port: 8081
+    - name: 9000-tcp
+      port: 9000
       protocol: TCP
-      targetPort: 8081
+      targetPort: 9000
     selector:
-      app: nexus3
-      deploymentconfig: nexus3
+      app: sonarqube
+      deploymentconfig: sonarqube
     sessionAffinity: None
     type: ClusterIP
   status:
