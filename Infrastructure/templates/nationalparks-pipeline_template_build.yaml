@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Template
 metadata:
   creationTimestamp: null
-  name: parksmap-pipeline-build
+  name: nationalparks-pipeline-build
 objects:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     labels:
-      build: parksmap-pipeline
-    name: parksmap-pipeline
+      build: nationalparks-pipeline
+    name: nationalparks-pipeline
   spec:
     nodeSelector: {}
     output: {}
@@ -28,5 +28,5 @@ objects:
           value: GUID_VARIABLE
         - name: CLUSTER
           value: CLUSTER_VARIABLE
-        jenkinsfilePath: ParksMap/Jenkinsfile
+        jenkinsfilePath: Nationalparks/Jenkinsfile
       type: JenkinsPipeline
