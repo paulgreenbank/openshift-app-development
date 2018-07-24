@@ -34,3 +34,6 @@ oc import-image sonarqube:6.7.4 --from=wkulhanek/sonarqube:6.7.4 --confirm
 
 # Process template and create sonarqube application for environment
 sed "s/GUID/${GUID}/g" ../templates/sonarqube_application_template_build.yaml | oc process -f - | oc create -f -
+
+# Expose Sonarqube Route
+oc expose svc sonarqube

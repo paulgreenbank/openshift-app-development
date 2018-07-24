@@ -19,6 +19,13 @@ oc import-image nexus3 --from=sonatype/nexus3 --confirm
 # Process template and create environment
 sed "s/GUID/${GUID}/g" ../templates/nexus_template_build.yaml | oc process -f - | oc create -f -
 
+# Exposing routes for Nexus and Nexus Registry
+oc expose svc nexus3
+
+# Expose edge Terminated Route for Nexus registry service
+oc expose dc nexus3 --port=5000 --name=nexus-registry
+oc create route edge nexus-registry --service=nexus-registry --port=5000
+
 # Wait for Nexus to fully deploy and become ready
 while : ; do
   echo "Checking if Nexus is Ready..."
