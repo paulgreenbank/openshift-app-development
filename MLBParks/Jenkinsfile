@@ -18,7 +18,7 @@ podTemplate(
     echo "CLUSTER: ${CLUSTER}"
 
     // Define Maven Command to point to correct nexus_settings.xml.
-    def mvnCmd = "mvn -s ../nexus_openshift_settings.xml"
+    def mvnCmd = "mvn -s ../nexus_settings.xml"
     // Define Maven Sonarqube Command.
     def mvnSonar = "mvn sonar:sonar -s ../nexus_settings.xml"
 
