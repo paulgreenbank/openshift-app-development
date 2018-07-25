@@ -34,7 +34,7 @@ podTemplate(
 
     // Checkout Source Code
     stage('Checkout Source') {
-      git url: 'https://github.com/paulgreenbank/openshift-app-development.git'
+      git 'https://github.com/paulgreenbank/openshift-app-development.git'
     }
 
     // Using Maven build the war file
