@@ -34,8 +34,9 @@ podTemplate(
     // Using Maven build the war file
     stage('Build war') {
       echo "Building version ${version}"
-      sh "cd MLBParks/
-      sh "${mvnCmd} clean install -DskipTests=true"
+      dir('MLBParks') {
+        sh "${mvnCmd} clean install -DskipTests=true"
+      }
     }
  
   }
