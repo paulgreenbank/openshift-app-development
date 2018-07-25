@@ -45,6 +45,18 @@ podTemplate(
         sh "${mvnCmd} clean install -DskipTests=true"
       }
     }
+
+    // Using Maven run the unit tests
+    stage('Unit Tests') {
+      echo "Running Unit Tests"
+      sh "${mvnCmd} test"
+    }
+  
+    // Using Maven call SonarQube for Code Analysis
+    stage('Code Analysis') {
+      echo "Running Code Analysis"
+      "${mvnSonar} -Dsonar.host.url=http://sonarqube-${GUID}-sonarqube.apps.${CLUSTER}"
+    }
  
   }
 }
