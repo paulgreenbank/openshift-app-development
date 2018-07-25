@@ -9,6 +9,8 @@ fi
 GUID=$1
 echo "Setting up Parks Development Environment in project ${GUID}-parks-dev"
 
-# Code to set up the parks development project.
+#  Change to Parks Development Environment Project
+oc project ${GUID}-parks-dev
 
-# To be Implemented by Student
+# Create MongoDB standalone persistent server from template
+oc process -f ../templates/mongodb_template_build.yaml | oc create -f -
