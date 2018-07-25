@@ -49,13 +49,17 @@ podTemplate(
     // Using Maven run the unit tests
     stage('Unit Tests') {
       echo "Running Unit Tests"
-      sh "${mvnCmd} test"
+      dir('MLBParks') {
+        sh "${mvnCmd} test"
+      }
     }
   
     // Using Maven call SonarQube for Code Analysis
     stage('Code Analysis') {
       echo "Running Code Analysis"
-      "${mvnSonar} -Dsonar.host.url=http://sonarqube-${GUID}-sonarqube.apps.${CLUSTER}"
+      dir('MLBParks') {
+        "${mvnSonar} -Dsonar.host.url=http://sonarqube-${GUID}-sonarqube.apps.${CLUSTER}"
+      }
     }
  
   }
