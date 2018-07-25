@@ -22,20 +22,20 @@ podTemplate(
     // Define Maven Sonarqube Command.
     def mvnSonar = "mvn sonar:sonar -s ../nexus_settings.xml"
 
-    // Extract version and other properties from the pom.xml
-    def groupId    = getGroupIdFromPom("MLBParks/pom.xml")
-    def artifactId = getArtifactIdFromPom("MLBParks/pom.xml")
-    def version    = getVersionFromPom("MLBParks/pom.xml")
-  
-    // Set the tag for the development image: version + build number
-    def devTag  = "${version}-${BUILD_NUMBER}"
-    // Set the tag for the production image: version
-    def prodTag = "${version}"
-
     // Checkout Source Code
     stage('Checkout Source') {
       git 'https://github.com/paulgreenbank/openshift-app-development.git'
     }
+
+    // Extract version and other properties from the pom.xml
+    def groupId    = getGroupIdFromPom("MLBParks/pom.xml")
+    def artifactId = getArtifactIdFromPom("MLBParks/pom.xml")
+    def version    = getVersionFromPom("MLBParks/pom.xml")
+
+    // Set the tag for the development image: version + build number
+    def devTag  = "${version}-${BUILD_NUMBER}"
+    // Set the tag for the production image: version
+    def prodTag = "${version}"
 
     // Using Maven build the war file
     stage('Build war') {
