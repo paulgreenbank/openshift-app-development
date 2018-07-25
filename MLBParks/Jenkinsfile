@@ -40,6 +40,7 @@ podTemplate(
     // Using Maven build the war file
     stage('Build war') {
       echo "Building version ${version}"
+      sh "sed -i \"s/GUID/${GUID}/g\" nexus_settings.xml"
       dir('MLBParks') {
         sh "${mvnCmd} clean install -DskipTests=true"
       }
