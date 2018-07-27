@@ -17,11 +17,84 @@ podTemplate(
     echo "GUID: ${GUID}"
     echo "CLUSTER: ${CLUSTER}"
 
-    // Your Pipeline Code goes here. Make sure to use the ${GUID} and ${CLUSTER} parameters where appropriate
-    // You need to build the application in directory `ParksMap`.
-    // Also copy "../nexus_settings.xml" to your build directory
-    // and replace 'GUID' in the file with your ${GUID} to point to >your< Nexus instance
+    // Define Maven Command to point to correct nexus_settings.xml.
+    def mvnCmd = "mvn -s ../nexus_settings.xml"
+    // Define Maven Sonarqube Command.
+    def mvnSonar = "mvn sonar:sonar -s ../nexus_settings.xml"
 
+    // Checkout Source Code
+    stage('Checkout Source') {
+      git 'https://github.com/paulgreenbank/openshift-app-development.git'
+    }
+
+    // Extract version and other properties from the pom.xml
+    def groupId    = getGroupIdFromPom("ParksMap/pom.xml")
+    def artifactId = getArtifactIdFromPom("ParksMap/pom.xml")
+    def version    = getVersionFromPom("ParksMap/pom.xml")
+
+    // Set the tag for the development image: version + build number
+    def devTag  = "${version}-${BUILD_NUMBER}"
+    // Set the tag for the production image: version
+    def prodTag = "${version}"
+
+    // Using Maven build the jar file
+    stage('Build jar') {
+      echo "Building version ${version}"
+      sh "sed -i \"s/GUID/${GUID}/g\" nexus_settings.xml"
+      dir('ParksMap') {
+        sh "${mvnCmd} clean package spring-boot:repackage -DskipTests -Dcom.redhat.xpaas.repo.redhatga"
+      }
+    }
+
+    // Using Maven run the unit tests
+    stage('Unit Tests') {
+      echo "Running Unit Tests"
+      dir('ParksMap') {
+        sh "${mvnCmd} test"
+      }
+    }
+  
+    // Using Maven call SonarQube for Code Analysis
+    stage('Code Analysis') {
+      echo "Running Code Analysis"
+      dir('ParksMap') {
+        sh "${mvnSonar} -Dsonar.host.url=http://sonarqube-${GUID}-sonarqube.apps.${CLUSTER}"
+      }
+    }
+
+    // Publish the built jar file to Nexus
+    stage('Publish to Nexus') {
+      echo "Publish to Nexus"
+      dir('ParksMap') {
+        sh "${mvnCmd} deploy -DskipTests=true -DaltDeploymentRepository=nexus::default::http://nexus3-${GUID}-nexus.apps.${CLUSTER}/repository/releases"
+      }
+    }
+
+    // Build the OpenShift Image in OpenShift and tag it.
+    stage('Build and Tag OpenShift Image') {
+      echo "Building OpenShift container image parksmap:${devTag}"
+      // Start build with compiled file from Nexus
+      sh "oc start-build parksmap --from-file=http://nexus3-${GUID}-nexus.apps.${CLUSTER}/repository/releases/com/openshift/evg/roadshow/parksmap/${version}/parksmap-${version}.jar --follow -n ${GUID}-parks-dev"
+      // Tag Image with new tag generated via pipeline syntax generator in Jenkins
+      openshiftTag alias: 'false', destStream: 'parksmap', destTag: "${devTag}", destinationNamespace: "${GUID}-parks-dev", namespace: "${GUID}-parks-dev", srcStream: 'parksmap', srcTag: 'latest', verbose: 'false'
+    }
+
+  // Deploy the built image to the Development Environment.
+  stage('Deploy to Dev') {
+    echo "Deploying container image to Development Project"
+    // Set Deployment image to correct version
+    sh "oc set image dc/parksmap parksmap=docker-registry.default.svc:5000/${GUID}-parks-dev/parksmap:${devTag} -n ${GUID}-parks-dev"
+    // Update configMap used by the application, delete and create
+	// sh "oc delete configmap parksmap-config -n ${GUID}-parks-dev --ignore-not-found"
+	// sh "oc create configmap parksmap-config -n ${GUID}-parks-dev --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties"
+    // Deploy image
+    openshiftDeploy depCfg: 'parksmap', namespace: "${GUID}-parks-dev", verbose: 'false', waitTime: '', waitUnit: 'sec'
+    // Verify Deployment
+    openshiftVerifyDeployment depCfg: 'parksmap', namespace: "${GUID}-parks-dev", verbose: 'false', replicaCount: '1', verifyReplicaCount: 'false', waitTime: '30', waitUnit: 'sec'
+    // Verify Service
+    openshiftVerifyService apiURL: '', authToken: '', namespace: "${GUID}-parks-dev", svcName: 'parksmap', verbose: 'false'
+  }
+ 
   }
 }
 
