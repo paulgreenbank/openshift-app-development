@@ -31,25 +31,38 @@ oc set triggers dc/mlbparks --remove-all -n ${GUID}-parks-dev
 # Create configmap which will be loaded as env variables
 oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Green)"
 # Add env variables from configmap to mlbparks deployment config
-oc set env --from=configmap/mongodb-config --from=configmap/mlbparks-config dc/mlbparks
+oc set env --from=configmap/mongodb-config dc/mlbparks
+oc set env --from=configmap/mlbparks-config dc/mlbparks
 # Expose mlbparks service on port 8080
 oc expose dc mlbparks --port 8080 --labels=type=parksmap-backend -n ${GUID}-parks-dev
 
 
 ##  Tasks for NationalParks microservice setup ##
-# Create binary build using jboss-eap container called mlbparks
+# Create binary build using openjdk18 container called nationalparks
 oc new-build --binary=true --name="nationalparks" redhat-openjdk18-openshift:1.2 -n ${GUID}-parks-dev
-# Add image stream using mlbparks binary build
+# Add image stream using nationalparks binary build
 oc new-app nationalparks --name=nationalparks --allow-missing-imagestream-tags=true -n ${GUID}-parks-dev
-# Remoe build triggers from mlbparks deployment config
+# Remoe build triggers from nationalparks deployment config
 oc set triggers dc/nationalparks --remove-all -n ${GUID}-parks-dev
 # Create configmap which will be loaded as env variables
 oc create configmap nationalparks-config --from-literal=APPNAME="National Parks (Green)"
 # Add env variables from configmaps to nationalparks deployment config
-oc set env --from=configmap/mongodb-config --from=configmap/nationalparks-config dc/nationalparks
-# Expose mlbparks service on port 8080
+oc set env --from=configmap/mongodb-config dc/nationalparks
+oc set env --from=configmap/nationalparks-config dc/nationalparks
+# Expose nationalparks service on port 8080
 oc expose dc nationalparks --port 8080 --labels=type=parksmap-backend -n ${GUID}-parks-dev
 
 
+##  Tasks for NationalParks microservice setup ##
+# Allow permissions for discovering backend services
+oc policy add-role-to-user view --serviceaccount=default
+# Create binary build using openjdk18 container called parksmap
+oc new-build --binary=true --name="parksmap" redhat-openjdk18-openshift:1.2 -n ${GUID}-parks-dev
+# Add image stream using parksmap binary build
+oc new-app parksmap --name=parksmap --allow-missing-imagestream-tags=true -n ${GUID}-parks-dev
+# Remoe build triggers from parksmap deployment config
+oc set triggers dc/parksmap --remove-all -n ${GUID}-parks-dev
+# Expose parksmap service on port 8080
+oc expose dc parksmap --port 8080 --labels=type=parksmap -n ${GUID}-parks-dev
 
 
