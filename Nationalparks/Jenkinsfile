@@ -37,12 +37,12 @@ podTemplate(
     // Set the tag for the production image: version
     def prodTag = "${version}"
 
-    // Using Maven build the war file
-    stage('Build war') {
+    // Using Maven build the jar file
+    stage('Build jar') {
       echo "Building version ${version}"
       sh "sed -i \"s/GUID/${GUID}/g\" nexus_settings.xml"
       dir('Nationalparks') {
-        sh "${mvnCmd} clean install -DskipTests=true"
+        sh "${mvnCmd} clean install -Dmaven.test.skip=true"
       }
     }
 
@@ -62,7 +62,7 @@ podTemplate(
       }
     }
 
-    // Publish the built war file to Nexus
+    // Publish the built jar file to Nexus
     stage('Publish to Nexus') {
       echo "Publish to Nexus"
       dir('Nationalparks') {
@@ -74,7 +74,7 @@ podTemplate(
     stage('Build and Tag OpenShift Image') {
       echo "Building OpenShift container image nationalparks:${devTag}"
       // Start build with compiled file from Nexus
-      sh "oc start-build nationalparks --from-file=http://nexus3-${GUID}-nexus.apps.${CLUSTER}/repository/releases/com/openshift/evg/roadshow/nationalparks/${version}/nationalparks-${version}.war --follow -n ${GUID}-parks-dev"
+      sh "oc start-build nationalparks --from-file=http://nexus3-${GUID}-nexus.apps.${CLUSTER}/repository/releases/com/openshift/evg/roadshow/nationalparks/${version}/nationalparks-${version}.jar --follow -n ${GUID}-parks-dev"
       // Tag Image with new tag generated via pipeline syntax generator in Jenkins
       openshiftTag alias: 'false', destStream: 'nationalparks', destTag: "${devTag}", destinationNamespace: "${GUID}-parks-dev", namespace: "${GUID}-parks-dev", srcStream: 'nationalparks', srcTag: 'latest', verbose: 'false'
     }
