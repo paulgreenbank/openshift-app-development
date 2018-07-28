@@ -105,6 +105,13 @@ podTemplate(
       // Curl endpoint to load data from application into backend database
       sh "curl http://mlbparks.${GUID}-parks-dev.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 30'"
     }
+
+    // Copy Image to Nexus Docker Registry
+    stage('Copy Image to Nexus Docker Registry') {
+      echo "Copy image to Nexus Docker Registry"
+      sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) --dest-creds=admin:admin123 docker://docker-registry.default.svc:5000/${GUID}-parks-dev/mlbparks:${devTag} docker://nexus-registry-${GUID}-nexus.apps.${CLUSTER}/${GUID}-parks-dev/mlbparks:${devTag}"
+      openshiftTag alias: 'false', destStream: 'mlbparks', destTag: "${prodTag}", destinationNamespace: "${GUID}-parks-dev", namespace: "${GUID}-parks-dev", srcStream: 'mlbparks', srcTag: "${devTag}", verbose: 'false'
+    }
  
   }
 }
