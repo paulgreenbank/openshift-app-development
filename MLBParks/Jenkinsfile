@@ -118,8 +118,8 @@ podTemplate(
     // Do not activate the new version yet.
     def destApp   = "mlbparks-green"
     def destColour = "Green"
-    def activeApp = "none"
-    def activeColour = "None"
+    def activeApp = "mlbparks-blue"
+    def activeColour = "Blue"
     
     stage('Blue/Green Production Deployment') {
       // Logic to identify next deployment colour (blue or green)
@@ -134,9 +134,9 @@ podTemplate(
       // Update the Image on the Production Deployment Config
       sh "oc set image dc/${destApp} ${destApp}=docker-registry.default.svc:5000/${GUID}-parks-dev/mlbparks:${prodTag} -n ${GUID}-parks-prod"
     
-      // Update the Config Map which contains the users for the MLBParks application
-      sh "oc delete configmap ${destApp}-config -n ${GUID}-parks-prod --ignore-not-found=true"
-      sh "oc create configmap ${destApp}-config --from-literal=APPNAME="MLB Parks (${destColour})" -n ${GUID}-parks-prod"
+      // Update the Config Map which contains the deployment colour for the MLBParks application
+      sh "oc delete configmap mlbparks-config -n ${GUID}-parks-prod --ignore-not-found=true"
+      sh "oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (${destColour})" -n ${GUID}-parks-prod"
     
       // Deploy the inactive application.
       openshiftDeploy depCfg: destApp, namespace: "${GUID}-parks-prod", verbose: 'false', waitTime: '', waitUnit: 'sec'
@@ -147,8 +147,8 @@ podTemplate(
     stage('Switch over to new Version') {
       // input "Switch Production?"
       echo "Switching Production application to ${destApp}."
-      sh "oc delete service -l activeApp=${activeApp} -n ${GUID}-parks-prod --ignore-not-found=true"
-      sh "oc expose dc ${destApp} --port 8080 --labels=type=parksmap-backend,activeApp=${destApp} -n ${GUID}-parks-prod"
+      sh "oc delete service -l activeColour=${activeColour} -n ${GUID}-parks-prod --ignore-not-found=true"
+      sh "oc expose dc ${destApp} --port 8080 --labels=type=parksmap-backend,activeColour=${destColour} -n ${GUID}-parks-prod"
     }
  
   }
