@@ -99,7 +99,7 @@ podTemplate(
     stage('Integration Tests') {
       echo "Running Integration Tests"
       // Waiting for Application
-      sleep 15
+      sleep 35
       // Curl status of application with /wz/health/ URL
       sh "curl http://mlbparks.${GUID}-parks-dev.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
       // Curl endpoint to load data from application into backend database
