@@ -124,7 +124,7 @@ podTemplate(
     stage('Blue/Green Production Deployment') {
       // Logic to identify next deployment colour (blue or green)
       //activeApp = sh(returnStdout: true, script: "oc get route mlbparks -n ${GUID}-parks-prod -o jsonpath='{ .spec.to.name }'").trim()
-      activeApp = sh(returnStdout: true, script: "oc get service -l type=parksmap-backend -n ${GUID}-parks-prod | cut -d' ' -f1 | grep mlbparks").trim()
+      activeApp = sh(returnStdout: true, script: "oc get service mlbparks -n ${GUID}-parks-prod -o 'jsonpath={ .spec.selector.app }' --ignore-not-found=true").trim()
       if (activeApp == "mlbparks-green") {
         destApp = "mlbparks-blue"
     	destColour = "Blue"
@@ -148,8 +148,8 @@ podTemplate(
     stage('Switch over to new Version') {
       // input "Switch Production?"
       echo "Switching Production application to ${destApp}."
-      sh "oc delete service -l activeColour=${activeColour} -n ${GUID}-parks-prod --ignore-not-found=true"
-      sh "oc expose dc ${destApp} --port 8080 --labels=type=parksmap-backend,activeColour=${destColour} -n ${GUID}-parks-prod"
+      sh "oc delete service mlbparks -n ${GUID}-parks-prod --ignore-not-found=true"
+      sh "oc expose dc ${destApp} --name=mlbparks --port 8080 --labels=type=parksmap-backend,activeApp=${destApp} -n ${GUID}-parks-prod"
     }
  
   }
