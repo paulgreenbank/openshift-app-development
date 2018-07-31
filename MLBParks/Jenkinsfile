@@ -137,7 +137,7 @@ podTemplate(
     
       // Update the Config Map which contains the deployment colour for the MLBParks application
       sh "oc delete configmap mlbparks-config -n ${GUID}-parks-prod --ignore-not-found=true"
-      sh "oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (${destColour})" -n ${GUID}-parks-prod"
+      sh "oc create configmap mlbparks-config --from-literal=APPNAME='MLB Parks (${destColour})' -n ${GUID}-parks-prod"
     
       // Deploy the inactive application.
       openshiftDeploy depCfg: destApp, namespace: "${GUID}-parks-prod", verbose: 'false', waitTime: '', waitUnit: 'sec'
