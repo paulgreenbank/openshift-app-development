@@ -106,7 +106,9 @@ podTemplate(
     // -------------------------------------
     // Do not activate the new version yet.
     def destApp   = "parksmap-green"
+    def destColour = "Green"
     def activeApp = "parksmap-blue"
+    def activeColour = "Blue"
 
     stage('Blue/Green Production Deployment') {
       // Logic to identify next deployment colour (blue or green)
@@ -114,12 +116,17 @@ podTemplate(
       activeApp = sh(returnStdout: true, script: "oc get service parksmap -n ${GUID}-parks-prod -o 'jsonpath={ .spec.selector.app }' --ignore-not-found=true").trim()
       if (activeApp == "parksmap-green") {
         destApp = "parksmap-blue"
+        destColour = "Blue"
       }
       echo "Active Application:      " + activeApp
       echo "Destination Application: " + destApp
 
       // Update the Image on the Production Deployment Config
       sh "oc set image dc/${destApp} ${destApp}=docker-registry.default.svc:5000/${GUID}-parks-dev/parksmap:${prodTag} -n ${GUID}-parks-prod"
+
+      // Update the Config Map which contains the deployment colour for the MLBParks application
+      sh "oc delete configmap parksmap-config -n ${GUID}-parks-prod --ignore-not-found=true"
+      sh "oc create configmap parksmap-config --from-literal=APPNAME='ParksMap (${destColour})' -n ${GUID}-parks-prod"
 
       // Deploy the inactive application.
       openshiftDeploy depCfg: destApp, namespace: "${GUID}-parks-prod", verbose: 'false', waitTime: '', waitUnit: 'sec'
