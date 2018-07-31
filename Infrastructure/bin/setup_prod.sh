@@ -88,6 +88,8 @@ oc new-app parksmap-blue --name=parksmap-blue --allow-missing-imagestream-tags=t
 oc set triggers dc/parksmap-blue --remove-all -n ${GUID}-parks-prod
 # Expose parksmap-blue service on port 8080
 oc expose dc parksmap-blue --port 8080 --labels=type=parksmap-blue -n ${GUID}-parks-prod
+# Expose the parksmap-blue service as external route
+oc expose service parksmap-blue --name=parksmap -n ${GUID}-parks-prod
 
 ##  Tasks for ParksMap microservice setup ##
 # Create binary build using openjdk18 container called parksmap-green
