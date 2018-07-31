@@ -123,7 +123,6 @@ podTemplate(
     
     stage('Blue/Green Production Deployment') {
       // Logic to identify next deployment colour (blue or green)
-      //activeApp = sh(returnStdout: true, script: "oc get route mlbparks -n ${GUID}-parks-prod -o jsonpath='{ .spec.to.name }'").trim()
       activeApp = sh(returnStdout: true, script: "oc get service mlbparks -n ${GUID}-parks-prod -o 'jsonpath={ .spec.selector.app }' --ignore-not-found=true").trim()
       if (activeApp == "mlbparks-green") {
         destApp = "mlbparks-blue"
@@ -144,6 +143,8 @@ podTemplate(
       openshiftVerifyDeployment depCfg: destApp, namespace: "${GUID}-parks-prod", replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
       openshiftVerifyService namespace: "${GUID}-parks-prod", svcName: "${destApp}", verbose: 'false'
     }
+
+    // Intergration tests should be run prior to switching application to production
 
     stage('Switch over to new Version') {
       // input "Switch Production?"

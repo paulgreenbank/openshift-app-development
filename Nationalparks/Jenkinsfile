@@ -99,11 +99,58 @@ podTemplate(
     stage('Integration Tests') {
       echo "Running Integration Tests"
       // Waiting for Application
-      sleep 15
+      sleep 35
       // Curl status of application with /wz/health/ URL
       sh "curl http://nationalparks.${GUID}-parks-dev.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
       // Curl endpoint to load data from application into backend database
       sh "curl http://nationalparks.${GUID}-parks-dev.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 2740'"
+    }
+
+    // Copy Image to Nexus Docker Registry
+    stage('Copy Image to Nexus Docker Registry') {
+      echo "Copy image to Nexus Docker Registry"
+      sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) --dest-creds=admin:admin123 docker://docker-registry.default.svc:5000/${GUID}-parks-dev/nationalparks:${devTag} docker://nexus-registry-${GUID}-nexus.apps.${CLUSTER}/${GUID}-parks-dev/nationalparks:${devTag}"
+      openshiftTag alias: 'false', destStream: 'nationalparks', destTag: "${prodTag}", destinationNamespace: "${GUID}-parks-dev", namespace: "${GUID}-parks-dev", srcStream: 'nationalparks', srcTag: "${devTag}", verbose: 'false'
+    }
+
+    // Blue/Green Deployment into Production
+    // -------------------------------------
+    // Do not activate the new version yet.
+    def destApp   = "nationalparks-green"
+    def destColour = "Green"
+    def activeApp = "nationalparks-blue"
+    def activeColour = "Blue"
+
+    stage('Blue/Green Production Deployment') {
+      // Logic to identify next deployment colour (blue or green)
+      activeApp = sh(returnStdout: true, script: "oc get service nationalparks -n ${GUID}-parks-prod -o 'jsonpath={ .spec.selector.app }' --ignore-not-found=true").trim()
+      if (activeApp == "nationalparks-green") {
+        destApp = "nationalparks-blue"
+        destColour = "Blue"
+      }
+      echo "Active Application:      " + activeApp
+      echo "Destination Application: " + destApp
+
+      // Update the Image on the Production Deployment Config
+      sh "oc set image dc/${destApp} ${destApp}=docker-registry.default.svc:5000/${GUID}-parks-dev/nationalparks:${prodTag} -n ${GUID}-parks-prod"
+
+      // Update the Config Map which contains the deployment colour for the MLBParks application
+      sh "oc delete configmap nationalparks-config -n ${GUID}-parks-prod --ignore-not-found=true"
+      sh "oc create configmap nationalparks-config --from-literal=APPNAME='MLB Parks (${destColour})' -n ${GUID}-parks-prod"
+
+      // Deploy the inactive application.
+      openshiftDeploy depCfg: destApp, namespace: "${GUID}-parks-prod", verbose: 'false', waitTime: '', waitUnit: 'sec'
+      openshiftVerifyDeployment depCfg: destApp, namespace: "${GUID}-parks-prod", replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
+      openshiftVerifyService namespace: "${GUID}-parks-prod", svcName: "${destApp}", verbose: 'false'
+    }
+
+    // Intergration tests should be run prior to switching application to production
+
+    stage('Switch over to new Version') {
+      // input "Switch Production?"
+      echo "Switching Production application to ${destApp}."
+      sh "oc delete service nationalparks -n ${GUID}-parks-prod --ignore-not-found=true"
+      sh "oc expose dc ${destApp} --name=nationalparks --port 8080 --labels=type=parksmap-backend,activeApp=${destApp} -n ${GUID}-parks-prod"
     }
  
   }
