@@ -104,7 +104,7 @@ podTemplate(
       // Verify Deployment
       openshiftVerifyDeployment depCfg: 'mlbparks', namespace: "${GUID}-parks-dev", verbose: 'false', replicaCount: '1', verifyReplicaCount: 'false', waitTime: '30', waitUnit: 'sec'
       // Recreate MLB back-end service
-      sh "oc delete service mlbparks --ignore-not-found=true"
+      sh "oc delete service mlbparks -n ${GUID}-parks-dev --ignore-not-found=true"
       sh "oc expose dc mlbparks --port 8080 --labels=type=parksmap-backend,activeDevColour=${destDevColour} -n ${GUID}-parks-dev"
       // Verify Service
       openshiftVerifyService apiURL: '', authToken: '', namespace: "${GUID}-parks-dev", svcName: 'mlbparks', verbose: 'false'
