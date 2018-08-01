@@ -87,7 +87,7 @@ podTemplate(
 
     stage('Blue/Green Dev Deployment') {
       // Logic to identify next deployment colour (blue or green)
-      activeDevApp = sh(returnStdout: true, script: "oc get service mlbparks -n ${GUID}-parks-dev -o 'jsonpath={ .metadata.labels.activeDevColour }' --ignore-not-found=true").trim()
+      activeDevColour = sh(returnStdout: true, script: "oc get service mlbparks -n ${GUID}-parks-dev -o 'jsonpath={ .metadata.labels.activeDevColour }' --ignore-not-found=true").trim()
       if (activeDevColour == "Green") {
         destDevColour = "Blue"
       }
