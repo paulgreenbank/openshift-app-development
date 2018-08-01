@@ -96,7 +96,7 @@ podTemplate(
       sh "oc set image dc/nationalparks nationalparks=docker-registry.default.svc:5000/${GUID}-parks-dev/nationalparks:${devTag} -n ${GUID}-parks-dev"
       // Update configMap used to set build (blue/green) deployment
       sh "oc delete configmap nationalparks-config -n ${GUID}-parks-dev --ignore-not-found"
-      sh "oc create configmap nationalparks-config -n ${GUID}-parks-dev --from-literal=APPNAME='MLB Parks (${destDevColour})'"
+      sh "oc create configmap nationalparks-config -n ${GUID}-parks-dev --from-literal=APPNAME='National Parks (${destDevColour})'"
       // Deploy image
       openshiftDeploy depCfg: 'nationalparks', namespace: "${GUID}-parks-dev", verbose: 'false', waitTime: '', waitUnit: 'sec'
       // Verify Deployment
@@ -149,7 +149,7 @@ podTemplate(
 
       // Update the Config Map which contains the deployment colour for the MLBParks application
       sh "oc delete configmap nationalparks-config -n ${GUID}-parks-prod --ignore-not-found=true"
-      sh "oc create configmap nationalparks-config --from-literal=APPNAME='MLB Parks (${destColour})' -n ${GUID}-parks-prod"
+      sh "oc create configmap nationalparks-config --from-literal=APPNAME='National Parks (${destColour})' -n ${GUID}-parks-prod"
 
       // Deploy the inactive application.
       openshiftDeploy depCfg: destApp, namespace: "${GUID}-parks-prod", verbose: 'false', waitTime: '', waitUnit: 'sec'
