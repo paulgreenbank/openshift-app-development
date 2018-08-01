@@ -79,18 +79,31 @@ podTemplate(
       openshiftTag alias: 'false', destStream: 'nationalparks', destTag: "${devTag}", destinationNamespace: "${GUID}-parks-dev", namespace: "${GUID}-parks-dev", srcStream: 'nationalparks', srcTag: 'latest', verbose: 'false'
     }
 
-    // Deploy the built image to the Development Environment.
-    stage('Deploy to Dev') {
+    // Blue/Green Deployment into Dev
+    // -------------------------------------
+    // Do not activate the new version yet.
+    def destDevColour = "Green"
+    def activeDevColour = "Blue"
+
+    stage('Blue/Green Dev Deployment') {
+      // Logic to identify next deployment colour (blue or green)
+      activeApp = sh(returnStdout: true, script: "oc get service mlbparks -n ${GUID}-parks-prod -o 'jsonpath={ .metadata.labels.activeDevColour }' --ignore-not-found=true").trim()
+      if (activeDevColour == "Green") {
+        destDevColour = "Blue"
+      }
       echo "Deploying container image to Development Project"
       // Set Deployment image to correct version
       sh "oc set image dc/nationalparks nationalparks=docker-registry.default.svc:5000/${GUID}-parks-dev/nationalparks:${devTag} -n ${GUID}-parks-dev"
       // Update configMap used to set build (blue/green) deployment
-  	// sh "oc delete configmap nationalparks-config -n ${GUID}-parks-dev --ignore-not-found"
-  	// sh "oc create configmap nationalparks-config -n ${GUID}-parks-dev --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties"
+      sh "oc delete configmap nationalparks-config -n ${GUID}-parks-dev --ignore-not-found"
+      sh "oc create configmap nationalparks-config -n ${GUID}-parks-dev --from-literal=APPNAME='MLB Parks (${destDevColour})'"
       // Deploy image
       openshiftDeploy depCfg: 'nationalparks', namespace: "${GUID}-parks-dev", verbose: 'false', waitTime: '', waitUnit: 'sec'
       // Verify Deployment
       openshiftVerifyDeployment depCfg: 'nationalparks', namespace: "${GUID}-parks-dev", verbose: 'false', replicaCount: '1', verifyReplicaCount: 'false', waitTime: '30', waitUnit: 'sec'
+      // Recreate MLB back-end service
+      sh "oc delete service nationalparks -n ${GUID}-parks-dev --ignore-not-found=true"
+      sh "oc expose dc nationalparks --port 8080 --labels=type=parksmap-backend,activeDevColour=${destDevColour} -n ${GUID}-parks-dev"
       // Verify Service
       openshiftVerifyService apiURL: '', authToken: '', namespace: "${GUID}-parks-dev", svcName: 'nationalparks', verbose: 'false'
     }
@@ -150,9 +163,9 @@ podTemplate(
       // Waiting for Application
       sleep 35
       // Curl status of application with /wz/health/ URL
-      sh "curl http://nationalparks.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
       // Curl endpoint to load data from application into backend database
-      sh "curl http://nationalparks.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 2740'"
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 2740'"
     }
 
     stage('Switch over to new Version') {
