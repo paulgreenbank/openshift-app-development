@@ -135,7 +135,14 @@ podTemplate(
 
     // Add intergration testing on new application build before switching to production
 
+    stage('Switch dark release over to new Version') {
+      // input "Switch Production?"
+      echo "Switching Dark release application to ${destApp}."
+      sh 'oc patch route parksmap-dark -n ${GUID}-parks-prod -p \'{"spec":{"to":{"name":"' + destApp + '"}}}\''
+    }
+
     stage('Switch over to new Version') {
+      // Automated release uncomment to use dark release for pre-release testing
       // input "Switch Production?"
       echo "Switching Production application to ${destApp}."
       sh 'oc patch route parksmap -n ${GUID}-parks-prod -p \'{"spec":{"to":{"name":"' + destApp + '"}}}\''

@@ -96,7 +96,7 @@ podTemplate(
     }
   
     // Run Integration Tests in the Development Environment.
-    stage('Integration Tests') {
+    stage('Dev Integration Tests') {
       echo "Running Integration Tests"
       // Waiting for Application
       sleep 35
@@ -144,7 +144,15 @@ podTemplate(
       openshiftVerifyService namespace: "${GUID}-parks-prod", svcName: "${destApp}", verbose: 'false'
     }
 
-    // Intergration tests should be run prior to switching application to production
+    stage('Prod Integration Tests') {
+      echo "Running Integration Tests"
+      // Waiting for Application
+      sleep 35
+      // Curl status of application with /wz/health/ URL
+      sh "curl http://mlbparks.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      // Curl endpoint to load data from application into backend database
+      sh "curl http://mlbparks.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 30'"
+    }
 
     stage('Switch over to new Version') {
       // input "Switch Production?"

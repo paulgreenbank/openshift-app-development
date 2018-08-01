@@ -94,6 +94,7 @@ oc set env --from=configmap/parksmap-config dc/parksmap-blue
 oc expose dc parksmap-blue --port 8080 --labels=type=parksmap-blue -n ${GUID}-parks-prod
 # Expose the parksmap-blue service as external route
 oc expose service parksmap-blue --name=parksmap -n ${GUID}-parks-prod
+oc expose service parksmap-blue --name=parksmap-dark -n ${GUID}-parks-prod
 
 ##  Tasks for ParksMap microservice setup ##
 # Create binary build using openjdk18 container called parksmap-green
