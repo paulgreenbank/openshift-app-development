@@ -149,9 +149,9 @@ podTemplate(
       // Waiting for Application
       sleep 35
       // Curl status of application with /wz/health/ URL
-      sh "curl http://mlbparks-${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
       // Curl endpoint to load data from application into backend database
-      sh "curl http://mlbparks-${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 30'"
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 30'"
     }
 
     stage('Switch over to new Version') {
