@@ -154,8 +154,6 @@ podTemplate(
       sleep 35
       // Curl status of application with /wz/health/ URL
       sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
-      // Curl endpoint to load data from application into backend database
-      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 30'"
     }
 
     stage('Switch dark release over to new Version') {
