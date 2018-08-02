@@ -79,21 +79,36 @@ podTemplate(
       openshiftTag alias: 'false', destStream: 'parksmap', destTag: "${devTag}", destinationNamespace: "${GUID}-parks-dev", namespace: "${GUID}-parks-dev", srcStream: 'parksmap', srcTag: 'latest', verbose: 'false'
     }
 
-  // Deploy the built image to the Development Environment.
-  stage('Deploy to Dev') {
-    echo "Deploying container image to Development Project"
-    // Set Deployment image to correct version
-    sh "oc set image dc/parksmap parksmap=docker-registry.default.svc:5000/${GUID}-parks-dev/parksmap:${devTag} -n ${GUID}-parks-dev"
-    // Update configMap used by the application, delete and create
-	// sh "oc delete configmap parksmap-config -n ${GUID}-parks-dev --ignore-not-found"
-	// sh "oc create configmap parksmap-config -n ${GUID}-parks-dev --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties"
-    // Deploy image
-    openshiftDeploy depCfg: 'parksmap', namespace: "${GUID}-parks-dev", verbose: 'false', waitTime: '', waitUnit: 'sec'
-    // Verify Deployment
-    openshiftVerifyDeployment depCfg: 'parksmap', namespace: "${GUID}-parks-dev", verbose: 'false', replicaCount: '1', verifyReplicaCount: 'false', waitTime: '30', waitUnit: 'sec'
-    // Verify Service
-    openshiftVerifyService apiURL: '', authToken: '', namespace: "${GUID}-parks-dev", svcName: 'parksmap', verbose: 'false'
-  }
+    // Blue/Green Deployment into Dev
+    // -------------------------------------
+    // Do not activate the new version yet.
+    def destDevColour = "Green"
+    def activeDevColour = "Blue"
+
+    stage('Blue/Green Dev Deployment') {
+      // Logic to identify next deployment colour (blue or green)
+      activeDevColour = sh(returnStdout: true, script: "oc get service parksmap -n ${GUID}-parks-dev -o 'jsonpath={ .metadata.labels.activeDevColour }' --ignore-not-found=true").trim()
+      if (activeDevColour == "Green") {
+        destDevColour = "Blue"
+      }
+
+      // Deploy the built image to the Development Environment.
+      echo "Deploying container image to Development Project"
+      // Set Deployment image to correct version
+      sh "oc set image dc/parksmap parksmap=docker-registry.default.svc:5000/${GUID}-parks-dev/parksmap:${devTag} -n ${GUID}-parks-dev"
+      // Update configMap used to set build (blue/green) deployment
+      sh "oc delete configmap parksmap-config -n ${GUID}-parks-dev --ignore-not-found"
+      sh "oc create configmap parksmap-config -n ${GUID}-parks-dev --from-literal=APPNAME='MLB Parks (${destDevColour})'"
+      // Deploy image
+      openshiftDeploy depCfg: 'parksmap', namespace: "${GUID}-parks-dev", verbose: 'false', waitTime: '', waitUnit: 'sec'
+      // Verify Deployment
+      openshiftVerifyDeployment depCfg: 'parksmap', namespace: "${GUID}-parks-dev", verbose: 'false', replicaCount: '1', verifyReplicaCount: 'false', waitTime: '30', waitUnit: 'sec'
+      // Recreate MLB back-end service
+      sh "oc delete service parksmap -n ${GUID}-parks-dev --ignore-not-found=true"
+      sh "oc expose dc parksmap --port 8080 --labels=type=parksmap-backend,activeDevColour=${destDevColour} -n ${GUID}-parks-dev"
+      // Verify Service
+      openshiftVerifyService apiURL: '', authToken: '', namespace: "${GUID}-parks-dev", svcName: 'parksmap', verbose: 'false'
+    }
 
     // Copy Image to Nexus Docker Registry
     stage('Copy Image to Nexus Docker Registry') {
