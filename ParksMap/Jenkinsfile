@@ -148,7 +148,15 @@ podTemplate(
       openshiftVerifyService namespace: "${GUID}-parks-prod", svcName: "${destApp}", verbose: 'false'
     }
 
-    // Add intergration testing on new application build before switching to production
+    stage('Prod Integration Tests') {
+      echo "Running Integration Tests"
+      // Waiting for Application
+      sleep 35
+      // Curl status of application with /wz/health/ URL
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      // Curl endpoint to load data from application into backend database
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/data/load/ | grep -q 'Items inserted in database: 30'"
+    }
 
     stage('Switch dark release over to new Version') {
       // input "Switch Production?"
@@ -157,8 +165,11 @@ podTemplate(
     }
 
     stage('Switch over to new Version') {
-      // Automated release uncomment to use dark release for pre-release testing
+      // Automated release enabled
+      // Uncomment to use dark release for pre-release testing
+      //
       // input "Switch Production?"
+      //
       echo "Switching Production application to ${destApp}."
       sh 'oc patch route parksmap -n ${GUID}-parks-prod -p \'{"spec":{"to":{"name":"' + destApp + '"}}}\''
     }
