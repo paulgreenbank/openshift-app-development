@@ -110,6 +110,17 @@ podTemplate(
       openshiftVerifyService apiURL: '', authToken: '', namespace: "${GUID}-parks-dev", svcName: 'parksmap', verbose: 'false'
     }
 
+    // Run Integration Tests in the Development Environment.
+    stage('Dev Integration Tests') {
+      echo "Running Integration Tests"
+      // Waiting for Application
+      sleep 35
+      // Curl status of application with /wz/health/ URL
+      sh "curl http://parksmap.${GUID}-parks-dev.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      // Test external route with APPNAME from URL
+      sh "curl http://parksmap-${GUID}-parks-dev.apps.${CLUSTER}/ws/appname/ | grep -q 'ParksMap (${destDevColour})'"
+    }
+
     // Copy Image to Nexus Docker Registry
     stage('Copy Image to Nexus Docker Registry') {
       echo "Copy image to Nexus Docker Registry"
