@@ -62,6 +62,10 @@ oc new-build --binary=true --name="parksmap" redhat-openjdk18-openshift:1.2 -n $
 oc new-app parksmap --name=parksmap --allow-missing-imagestream-tags=true -n ${GUID}-parks-dev
 # Remoe build triggers from parksmap deployment config
 oc set triggers dc/parksmap --remove-all -n ${GUID}-parks-dev
+# Create configmap which will be loaded as env variables
+oc create configmap parksmap-config --from-literal=APPNAME="ParksMap(Green)"
+# Add env variables from configmaps to nationalparks deployment config
+oc set env --from=configmap/parksmap-config dc/parksmap
 # Expose parksmap service on port 8080
 oc expose dc parksmap --port 8080 --labels=type=parksmap -n ${GUID}-parks-dev
 
