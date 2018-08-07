@@ -32,5 +32,3 @@ oc label imagestream jenkins-slave-maven-skopeo-centos7 role=jenkins-slave -n ${
 sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ./Infrastructure/templates/mlbparks-pipeline_template_build.yaml | oc process -f - | oc create -f - -n ${GUID}-jenkins
 sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ./Infrastructure/templates/nationalparks-pipeline_template_build.yaml | oc process -f - | oc create -f - -n ${GUID}-jenkins
 sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ./Infrastructure/templates/parksmap-pipeline_template_build.yaml | oc process -f - | oc create -f - -n ${GUID}-jenkins
-
-echo "Setup script for ${GUID}-jenkins run complete"
