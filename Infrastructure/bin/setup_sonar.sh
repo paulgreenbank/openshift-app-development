@@ -15,10 +15,10 @@ echo "Setting up Sonarqube in project $GUID-sonarqube"
 oc project ${GUID}-sonarqube
 
 # Create secret for database password from /dev/urandom
-oc create secret generic sonar-secrets --from-literal DATABASE_PASSWORD=${GENERATED_PASSWORD} --from-literal DATABASE_USER=sonar --from-literal DATABASE_NAME=${GENERATED_DATABASE} --from-literal JDBC_URL=jdbc:postgresql://postgresql/${GENERATED_DATABASE}
+oc create secret generic sonar-secrets --from-literal DATABASE_PASSWORD=${GENERATED_PASSWORD} --from-literal DATABASE_USER=sonar --from-literal DATABASE_NAME=${GENERATED_DATABASE} --from-literal JDBC_URL=jdbc:postgresql://postgresql/${GENERATED_DATABASE} -n ${GUID}-sonarqube
 
 # Process template and create database for environment
-sed "s/GUID/${GUID}/g" ./Infrastructure/templates/sonarqube_postgres_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID/${GUID}/g" ./Infrastructure/templates/sonarqube_postgres_template_build.yaml | oc process -f - | oc create -f - -n ${GUID}-sonarqube
 
 # Wait for Nexus to fully deploy and become ready
 while : ; do
@@ -30,10 +30,10 @@ while : ; do
 done
 
 # Setup Nexus ImageStream for build
-oc import-image sonarqube:6.7.4 --from=wkulhanek/sonarqube:6.7.4 --confirm
+oc import-image sonarqube:6.7.4 --from=wkulhanek/sonarqube:6.7.4 --confirm -n ${GUID}-sonarqube
 
 # Process template and create sonarqube application for environment
-sed "s/GUID/${GUID}/g" ./Infrastructure/templates/sonarqube_application_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID/${GUID}/g" ./Infrastructure/templates/sonarqube_application_template_build.yaml | oc process -f - | oc create -f - -n ${GUID}-sonarqube
 
 # Expose Sonarqube Route
-oc expose svc sonarqube
+oc expose svc sonarqube -n ${GUID}-sonarqube

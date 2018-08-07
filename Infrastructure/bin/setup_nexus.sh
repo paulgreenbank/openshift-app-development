@@ -14,17 +14,17 @@ echo "Setting up Nexus in project $GUID-nexus"
 oc project ${GUID}-nexus
 
 # Setup Nexus ImageStream for build
-oc import-image nexus3 --from=sonatype/nexus3 --confirm
+oc import-image nexus3 --from=sonatype/nexus3 --confirm -n ${GUID}-nexus
 
 # Process template and create environment
-sed "s/GUID/${GUID}/g" ./Infrastructure/templates/nexus_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID/${GUID}/g" ./Infrastructure/templates/nexus_template_build.yaml | oc process -f - | oc create -f - -n ${GUID}-nexus
 
 # Exposing routes for Nexus and Nexus Registry
-oc expose svc nexus3
+oc expose svc nexus3 -n ${GUID}-nexus
 
 # Expose edge Terminated Route for Nexus registry service
-oc expose dc nexus3 --port=5000 --name=nexus-registry
-oc create route edge nexus-registry --service=nexus-registry --port=5000
+oc expose dc nexus3 --port=5000 --name=nexus-registry -n ${GUID}-nexus
+oc create route edge nexus-registry --service=nexus-registry --port=5000 -n ${GUID}-nexus
 
 # Wait for Nexus to fully deploy and become ready
 while : ; do

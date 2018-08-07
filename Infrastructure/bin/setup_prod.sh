@@ -13,13 +13,13 @@ echo "Setting up Parks Production Environment in project ${GUID}-parks-prod"
 oc project ${GUID}-parks-prod
 
 # Create MongoDB statefulset servers with 3 replicas from template
-oc process -f ./Infrastructure/templates/mongodb_statefulset_template_build.yaml | oc create -f -
+oc process -f ./Infrastructure/templates/mongodb_statefulset_template_build.yaml | oc create -f - -n ${GUID}-parks-prod
 
 oc policy add-role-to-group system:image-puller system:serviceaccounts:${GUID}-parks-prod -n ${GUID}-parks-dev
 oc policy add-role-to-user edit system:serviceaccount:${GUID}-jenkins:jenkins -n ${GUID}-parks-prod
 
 # Create shared configmap for database connection
-oc create configmap mongodb-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks --from-literal=DB_REPLICASET=rs0
+oc create configmap mongodb-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks --from-literal=DB_REPLICASET=rs0 -n ${GUID}-parks-prod
 
 ## Tasks for MLBParks Blue microservice setup ##
 # Create binary build using jboss-eap container called mlbparks-blue
@@ -29,10 +29,10 @@ oc new-app mlbparks-blue --name=mlbparks-blue --allow-missing-imagestream-tags=t
 # Remove build triggers from mlbparks-blue deployment config
 oc set triggers dc/mlbparks-blue --remove-all -n ${GUID}-parks-prod
 # Create configmap which will be loaded as env variables
-oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Blue)"
+oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Blue)" -n ${GUID}-parks-prod
 # Add env variables from configmap to mlbparks-blue deployment config
-oc set env --from=configmap/mongodb-config dc/mlbparks-blue
-oc set env --from=configmap/mlbparks-config dc/mlbparks-blue
+oc set env --from=configmap/mongodb-config dc/mlbparks-blue -n ${GUID}-parks-prod
+oc set env --from=configmap/mlbparks-config dc/mlbparks-blue -n ${GUID}-parks-prod
 # Expose mlbparks-blue service on port 8080 for deployment testing
 oc expose dc mlbparks-blue --port 8080 --labels=activeApp=mlbparks-blue -n ${GUID}-parks-prod
 
@@ -44,8 +44,8 @@ oc new-app mlbparks-green --name=mlbparks-green --allow-missing-imagestream-tags
 # Remove build triggers from mlbparks-green deployment config
 oc set triggers dc/mlbparks-green --remove-all -n ${GUID}-parks-prod
 # Add env variables from configmap to mlbparks-green deployment config
-oc set env --from=configmap/mongodb-config dc/mlbparks-green
-oc set env --from=configmap/mlbparks-config dc/mlbparks-green
+oc set env --from=configmap/mongodb-config dc/mlbparks-green -n ${GUID}-parks-prod
+oc set env --from=configmap/mlbparks-config dc/mlbparks-green -n ${GUID}-parks-prod
 # Expose mlbparks-green service on port 8080 for deployment testing
 oc expose dc mlbparks-green --port 8080 --labels=activeApp=mlbparks-green -n ${GUID}-parks-prod
 
@@ -57,10 +57,10 @@ oc new-app nationalparks-blue --name=nationalparks-blue --allow-missing-imagestr
 # Remove build triggers from nationalparks-blue deployment config
 oc set triggers dc/nationalparks-blue --remove-all -n ${GUID}-parks-prod
 # Create configmap which will be loaded as env variables
-oc create configmap nationalparks-config --from-literal=APPNAME="MLB Parks (Blue)"
+oc create configmap nationalparks-config --from-literal=APPNAME="MLB Parks (Blue)" -n ${GUID}-parks-prod
 # Add env variables from configmap to nationalparks-blue deployment config
-oc set env --from=configmap/mongodb-config dc/nationalparks-blue
-oc set env --from=configmap/nationalparks-config dc/nationalparks-blue
+oc set env --from=configmap/mongodb-config dc/nationalparks-blue -n ${GUID}-parks-prod
+oc set env --from=configmap/nationalparks-config dc/nationalparks-blue -n ${GUID}-parks-prod
 # Expose nationalparks-blue service on port 8080 for deployment testing
 oc expose dc nationalparks-blue --port 8080 --labels=activeApp=nationalparks-blue -n ${GUID}-parks-prod
 
@@ -72,8 +72,8 @@ oc new-app nationalparks-green --name=nationalparks-green --allow-missing-images
 # Remove build triggers from nationalparks-green deployment config
 oc set triggers dc/nationalparks-green --remove-all -n ${GUID}-parks-prod
 # Add env variables from configmap to nationalparks-green deployment config
-oc set env --from=configmap/mongodb-config dc/nationalparks-green
-oc set env --from=configmap/nationalparks-config dc/nationalparks-green
+oc set env --from=configmap/mongodb-config dc/nationalparks-green -n ${GUID}-parks-prod
+oc set env --from=configmap/nationalparks-config dc/nationalparks-green -n ${GUID}-parks-prod
 # Expose nationalparks-green service on port 8080 for deployment testing
 oc expose dc nationalparks-green --port 8080 --labels=activeApp=nationalparks-green -n ${GUID}-parks-prod
 
@@ -87,9 +87,9 @@ oc new-app parksmap-blue --name=parksmap-blue --allow-missing-imagestream-tags=t
 # Remoe build triggers from parksmap deployment config
 oc set triggers dc/parksmap-blue --remove-all -n ${GUID}-parks-prod
 # Create configmap which will be loaded as env variables
-oc create configmap parksmap-config --from-literal=APPNAME="ParksMap (Blue)"
+oc create configmap parksmap-config --from-literal=APPNAME="ParksMap (Blue)" -n ${GUID}-parks-prod
 # Add env variables from configmap to nationalparks-blue deployment config
-oc set env --from=configmap/parksmap-config dc/parksmap-blue
+oc set env --from=configmap/parksmap-config dc/parksmap-blue -n ${GUID}-parks-prod
 # Expose parksmap-blue service on port 8080
 oc expose dc parksmap-blue --port 8080 --labels=type=parksmap-blue -n ${GUID}-parks-prod
 # Expose the parksmap-blue service as external route
@@ -102,8 +102,8 @@ oc new-build --binary=true --name="parksmap-green" redhat-openjdk18-openshift:1.
 # Add image stream using parksmap-green binary build
 oc new-app parksmap-green --name=parksmap-green --allow-missing-imagestream-tags=true -n ${GUID}-parks-prod
 # Remove build triggers from parksmap deployment config
-oc set triggers dc/parksmap-green --remove-all -n ${GUID}-parks-prod
+oc set triggers dc/parksmap-green --remove-all -n ${GUID}-parks-prod -n ${GUID}-parks-prod
 # Add env variables from configmap to nationalparks-blue deployment config
-oc set env --from=configmap/parksmap-config dc/parksmap-green
+oc set env --from=configmap/parksmap-config dc/parksmap-green -n ${GUID}-parks-prod
 # Expose parksmap-green service on port 8080
 oc expose dc parksmap-green --port 8080 --labels=type=parksmap-green -n ${GUID}-parks-prod
