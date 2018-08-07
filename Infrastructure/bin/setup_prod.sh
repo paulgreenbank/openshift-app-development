@@ -9,9 +9,6 @@ fi
 GUID=$1
 echo "Setting up Parks Production Environment in project ${GUID}-parks-prod"
 
-#  Change to Parks Development Environment Project
-oc project ${GUID}-parks-prod
-
 # Create MongoDB statefulset servers with 3 replicas from template
 oc process -f ./Infrastructure/templates/mongodb_statefulset_template_build.yaml | oc create -f - -n ${GUID}-parks-prod
 

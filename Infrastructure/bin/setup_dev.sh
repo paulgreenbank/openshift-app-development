@@ -9,9 +9,6 @@ fi
 GUID=$1
 echo "Setting up Parks Development Environment in project ${GUID}-parks-dev"
 
-#  Change to Parks Development Environment Project
-oc project ${GUID}-parks-dev
-
 # Allow edit for ${GUID}-jenkins project jenkins service account
 oc policy add-role-to-user edit system:serviceaccount:${GUID}-jenkins:jenkins -n ${GUID}-parks-dev
 

@@ -11,9 +11,6 @@ GENERATED_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -
 GENERATED_DATABASE=$(cat /dev/urandom | tr -dc 'a-z' | fold -w 8 | head -n 1)
 echo "Setting up Sonarqube in project $GUID-sonarqube"
 
-# Change to Nexus Project
-oc project ${GUID}-sonarqube
-
 # Create secret for database password from /dev/urandom
 oc create secret generic sonar-secrets --from-literal DATABASE_PASSWORD=${GENERATED_PASSWORD} --from-literal DATABASE_USER=sonar --from-literal DATABASE_NAME=${GENERATED_DATABASE} --from-literal JDBC_URL=jdbc:postgresql://postgresql/${GENERATED_DATABASE} -n ${GUID}-sonarqube
 

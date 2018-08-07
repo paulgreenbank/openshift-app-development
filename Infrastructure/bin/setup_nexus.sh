@@ -10,9 +10,6 @@ fi
 GUID=$1
 echo "Setting up Nexus in project $GUID-nexus"
 
-# Change to Nexus Project
-oc project ${GUID}-nexus
-
 # Setup Nexus ImageStream for build
 oc import-image nexus3 --from=sonatype/nexus3 --confirm -n ${GUID}-nexus
 
