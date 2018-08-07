@@ -38,4 +38,4 @@ done
 
 # Setup Nexus Repositoies via script sourced from
 # https://raw.githubusercontent.com/wkulhanek/ocp_advanced_development_resources/master/nexus/setup_nexus3.sh
-./configure_nexus3.sh admin admin123 http://$(oc get route nexus3 --template='{{ .spec.host }}')
+./Infrastructure/bin/configure_nexus3.sh admin admin123 http://$(oc get route nexus3 --template='{{ .spec.host }}')
