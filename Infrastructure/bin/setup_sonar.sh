@@ -8,15 +8,10 @@ if [ "$#" -ne 1 ]; then
 fi
 
 GUID=$1
-#GENERATED_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-#GENERATED_DATABASE=$(cat /dev/urandom | tr -dc 'a-z' | fold -w 8 | head -n 1)
 echo "Setting up Sonarqube in project $GUID-sonarqube"
-#echo "GENERATED_PASSWORD = ${GENERATED_PASSWORD}"
-#echo "GENERATED_DATABASE = ${GENERATED_DATABASE}"
 
 # Create secret for database password from /dev/urandom
 echo "Creating Sonarqube secret"
-#oc create secret generic sonar-secrets --from-literal DATABASE_PASSWORD="${GENERATED_PASSWORD}" --from-literal DATABASE_USER=sonar --from-literal DATABASE_NAME="${GENERATED_DATABASE}" --from-literal JDBC_URL="jdbc:postgresql://postgresql/${GENERATED_DATABASE}" -n ${GUID}-sonarqube
 oc create secret generic sonar-secrets --from-literal DATABASE_PASSWORD=sonarpa55word --from-literal DATABASE_USER=sonar --from-literal DATABASE_NAME=sonardb --from-literal JDBC_URL=jdbc:postgresql://postgresql/sonardb -n ${GUID}-sonarqube
 
 # Process template and create database for environment
