@@ -27,7 +27,7 @@ oc create route edge nexus-registry --service=nexus-registry --port=5000 -n ${GU
 while : ; do
   echo "Checking if Nexus is Ready..."
   #oc get pod -n ${GUID}-nexus | grep -v deploy | grep "1/1"
-  curl -i http://$(oc get route nexus3 --template='{{ .spec.host }}') 2>&1 /dev/null | grep 'HTTP/1.1 200 OK' > /dev/null
+  curl -i http://$(oc get route nexus3 --template='{{ .spec.host }}' -n ${GUID}-nexus) 2>&1 /dev/null | grep 'HTTP/1.1 200 OK' > /dev/null
   [[ "$?" == "1" ]] || break
   echo "... not quite yet. Sleeping 20 seconds."
   sleep 20
@@ -35,4 +35,4 @@ done
 
 # Setup Nexus Repositoies via script sourced from
 # https://raw.githubusercontent.com/wkulhanek/ocp_advanced_development_resources/master/nexus/setup_nexus3.sh
-./Infrastructure/bin/configure_nexus3.sh admin admin123 http://$(oc get route nexus3 --template='{{ .spec.host }}')
+./Infrastructure/bin/configure_nexus3.sh admin admin123 http://$(oc get route nexus3 --template='{{ .spec.host }}' -n ${GUID}-nexus)
