@@ -25,8 +25,8 @@ objects:
       jenkinsPipelineStrategy:
         env:
         - name: GUID
-          value: GUID_VARIABLE
+          value: "GUID_VARIABLE"
         - name: CLUSTER
-          value: CLUSTER_VARIABLE
+          value: "CLUSTER_VARIABLE"
         jenkinsfilePath: ParksMap/Jenkinsfile
       type: JenkinsPipeline
