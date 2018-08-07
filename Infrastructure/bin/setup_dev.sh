@@ -16,7 +16,7 @@ oc project ${GUID}-parks-dev
 oc policy add-role-to-user edit system:serviceaccount:${GUID}-jenkins:jenkins -n ${GUID}-parks-dev
 
 # Create MongoDB standalone persistent server from template
-oc process -f ../templates/mongodb_template_build.yaml | oc create -f -
+oc process -f ./Infrastructure/templates/mongodb_template_build.yaml | oc create -f -
 
 # Create shared configmap for database connection
 oc create configmap mongodb-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks

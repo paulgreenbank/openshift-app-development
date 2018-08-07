@@ -17,7 +17,7 @@ oc project ${GUID}-nexus
 oc import-image nexus3 --from=sonatype/nexus3 --confirm
 
 # Process template and create environment
-sed "s/GUID/${GUID}/g" ../templates/nexus_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID/${GUID}/g" ./Infrastructure/templates/nexus_template_build.yaml | oc process -f - | oc create -f -
 
 # Exposing routes for Nexus and Nexus Registry
 oc expose svc nexus3

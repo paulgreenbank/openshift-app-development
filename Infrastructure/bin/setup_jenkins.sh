@@ -31,6 +31,6 @@ oc tag jenkins-slave-maven-skopeo-centos7:latest jenkins-slave-maven-skopeo-cent
 oc label imagestream jenkins-slave-maven-skopeo-centos7 role=jenkins-slave
 
 # Create the three pipeline build configs
-sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ../templates/mlbparks-pipeline_template_build.yaml | oc process -f - | oc create -f -
-sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ../templates/nationalparks-pipeline_template_build.yaml | oc process -f - | oc create -f -
-sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ../templates/parksmap-pipeline_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ./Infrastructure/templates/mlbparks-pipeline_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ./Infrastructure/templates/nationalparks-pipeline_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID_VARIABLE/${GUID}/g;s/CLUSTER_VARIABLE/${CLUSTER}/g" ./Infrastructure/templates/parksmap-pipeline_template_build.yaml | oc process -f - | oc create -f -

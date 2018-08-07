@@ -18,7 +18,7 @@ oc project ${GUID}-sonarqube
 oc create secret generic sonar-secrets --from-literal DATABASE_PASSWORD=${GENERATED_PASSWORD} --from-literal DATABASE_USER=sonar --from-literal DATABASE_NAME=${GENERATED_DATABASE} --from-literal JDBC_URL=jdbc:postgresql://postgresql/${GENERATED_DATABASE}
 
 # Process template and create database for environment
-sed "s/GUID/${GUID}/g" ../templates/sonarqube_postgres_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID/${GUID}/g" ./Infrastructure/templates/sonarqube_postgres_template_build.yaml | oc process -f - | oc create -f -
 
 # Wait for Nexus to fully deploy and become ready
 while : ; do
@@ -33,7 +33,7 @@ done
 oc import-image sonarqube:6.7.4 --from=wkulhanek/sonarqube:6.7.4 --confirm
 
 # Process template and create sonarqube application for environment
-sed "s/GUID/${GUID}/g" ../templates/sonarqube_application_template_build.yaml | oc process -f - | oc create -f -
+sed "s/GUID/${GUID}/g" ./Infrastructure/templates/sonarqube_application_template_build.yaml | oc process -f - | oc create -f -
 
 # Expose Sonarqube Route
 oc expose svc sonarqube

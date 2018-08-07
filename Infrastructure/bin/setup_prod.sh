@@ -13,7 +13,7 @@ echo "Setting up Parks Production Environment in project ${GUID}-parks-prod"
 oc project ${GUID}-parks-prod
 
 # Create MongoDB statefulset servers with 3 replicas from template
-oc process -f ../templates/mongodb_statefulset_template_build.yaml | oc create -f -
+oc process -f ./Infrastructure/templates/mongodb_statefulset_template_build.yaml | oc create -f -
 
 oc policy add-role-to-group system:image-puller system:serviceaccounts:${GUID}-parks-prod -n ${GUID}-parks-dev
 oc policy add-role-to-user edit system:serviceaccount:${GUID}-jenkins:jenkins -n ${GUID}-parks-prod
