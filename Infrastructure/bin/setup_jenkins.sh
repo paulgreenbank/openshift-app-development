@@ -24,7 +24,8 @@ oc new-build --name=jenkins-slave-maven-skopeo-centos7 -D $'FROM openshift/jenki
 # Sleep 30 seconds for Image Stream to be created
 sleep 30
 
-# Tag Jenkins slave ImageStream to version 3.9
+# Tag Jenkins slave ImageStream to version 3.9 & latest
+oc tag jenkins-slave-maven-skopeo-centos7 jenkins-slave-maven-skopeo-centos7:latest
 oc tag jenkins-slave-maven-skopeo-centos7:latest jenkins-slave-maven-skopeo-centos7:v3.9
 
 # Label Jenkins slave ImageStream for Jenkins to use for slave builds
