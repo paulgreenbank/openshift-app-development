@@ -35,7 +35,7 @@ oc tag jenkins-slave-maven-skopeo-centos7 jenkins-slave-maven-skopeo-centos7:lat
 
 # Sleep 10 seconds and add version 3.9 tag to Jenkins slave ImageStream
 sleep 10
-oc tag jenkins-slave-maven-skopeo-centos7:latest jenkins-slave-maven-skopeo-centos7:v3.9 -n ${GUID}-jenkins
+oc tag jenkins-slave-maven-skopeo-centos7 jenkins-slave-maven-skopeo-centos7:v3.9 -n ${GUID}-jenkins
 
 # Label Jenkins slave ImageStream for Jenkins to use for slave builds
 oc label imagestream jenkins-slave-maven-skopeo-centos7 role=jenkins-slave -n ${GUID}-jenkins
