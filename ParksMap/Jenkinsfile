@@ -116,7 +116,7 @@ podTemplate(
       // Waiting for Application
       sleep 35
       // Curl status of application with /wz/health/ URL
-      sh "curl http://parksmap.${GUID}-parks-dev.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      sh "curl http://parksmap.${GUID}-parks-dev.svc:8080/ws/healthz/ | grep -q 'OK'"
       // Test external route with APPNAME from URL
       sh "curl http://parksmap-${GUID}-parks-dev.apps.${CLUSTER}/ws/appname/ | grep -q 'ParksMap (${destDevColour})'"
     }
@@ -164,7 +164,7 @@ podTemplate(
       // Waiting for Application
       sleep 35
       // Curl status of application with /wz/health/ URL
-      sh "curl http://${destApp}.${GUID}-parks-prod.svc.cluster.local:8080/ws/healthz/ | grep -q 'OK'"
+      sh "curl http://${destApp}.${GUID}-parks-prod.svc:8080/ws/healthz/ | grep -q 'OK'"
     }
 
     stage('Switch dark release over to new Version') {

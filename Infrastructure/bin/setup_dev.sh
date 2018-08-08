@@ -65,5 +65,6 @@ oc create configmap parksmap-config --from-literal=APPNAME="ParksMap(Green)" -n 
 oc set env --from=configmap/parksmap-config dc/parksmap -n ${GUID}-parks-dev
 # Expose parksmap service on port 8080
 oc expose dc parksmap --port 8080 --labels=type=parksmap -n ${GUID}-parks-dev
+oc expose service parksmap --name=parksmap -n ${GUID}-parks-dev
 
 
