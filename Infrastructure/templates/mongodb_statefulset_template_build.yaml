@@ -34,11 +34,11 @@ objects:
                 mountPath: "/var/lib/mongodb/data"
             env:
               - name: MONGODB_DATABASE
-                value: "parks"
+                value: "${MONGODB_DATABASE}"
               - name: MONGODB_USER
-                value: "mongodb"
+                value: "${MONGODB_USER}"
               - name: MONGODB_PASSWORD
-                value: "mongodb"
+                value: "${MONGODB_PASSWORD}"
               - name: MONGODB_ADMIN_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -47,12 +47,9 @@ objects:
               - name: MONGODB_REPLICA_NAME
                 value: "rs0"
               - name: MONGODB_KEYFILE_VALUE
-                valueFrom:
-                  secretKeyRef:
-                    name: mongodb-secrets
-                    key: mongodb-key-file
+                value: "${MONGODB_KEYFILE_VALUE}"
               - name: MONGODB_SERVICE_NAME
-                value: "mongodb-internal"
+                value: "${MONGODB_SERVICE}"
             readinessProbe:
               exec:
                 command:
@@ -88,6 +85,13 @@ objects:
   status:
     loadBalancer: {}
 - apiVersion: v1
+  kind: Secret
+  metadata:
+    name: mongodb-secrets
+  data:
+    mongodb-admin-password: "${MONGODB_ADMIN_PASSWORD}"
+  type: Opaque
+- apiVersion: v1
   kind: Service
   metadata:
     annotations:
@@ -109,3 +113,37 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
+parameters:
+- description: Random MongoDB admin password.
+  displayName: Mongo DB Admin Password
+  name: MONGODB_ADMIN_PASSWORD
+  required: true
+  from: "[a-zA-Z0-9]{16}"
+  generate: expression
+- description: MongoDB KeyFile Value.
+  displayName: MongoDB KeyFile Value
+  name: MONGODB_KEYFILE_VALUE
+  required: true
+  from: "[a-zA-Z0-9]{16}"
+  generate: expression
+- description: MongoDB Database Name.
+  displayName: MongoDB Database
+  name: MONGODB_DATABASE
+  required: true
+  value: parks
+- description: MongoDB User Name.
+  displayName: MongoDB User
+  name: MONGODB_USER
+  required: true
+  value: mongodb
+- description: MongoDB User Password.
+  displayName: MongoDB Password
+  name: MONGODB_PASSWORD
+  required: true
+  value: mongodb
+- description: MongoDB Service Name.
+  displayName: MongoDB Service
+  name: MONGODB_SERVICE
+  required: true
+  value: mongodb-internal
+
