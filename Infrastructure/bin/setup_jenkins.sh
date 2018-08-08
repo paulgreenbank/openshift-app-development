@@ -15,14 +15,8 @@ echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} for Cl
 # Create master Jenkins build
 oc new-app jenkins-persistent --param ENABLE_OAUTH=true --param MEMORY_LIMIT=2Gi --param VOLUME_CAPACITY=4Gi -n ${GUID}-jenkins
 
-# Wait for Jenkins to fully deploy and become ready
-while : ; do
-  echo "Checking if Jenkins pod is Ready..."
-  oc get pod -n ${GUID}-jenkins | grep -v "deploy\|build" | grep -q "1/1"
-  [[ "$?" == "1" ]] || break
-  echo "... not quite yet. Sleeping 20 seconds."
-  sleep 20
-done
+# Adjust readiness probe for Jenkins
+oc set probe dc jenkins --readiness --initial-delay-seconds=300 -n ${GUID}-jenkins
 
 # Setup Jenkins Mavin ImageStream for Jenkins slave builds
 oc new-build --name=jenkins-slave-maven-skopeo-centos7 -D $'FROM openshift/jenkins-slave-maven-centos7:v3.9\nUSER root\nRUN yum -y install skopeo apb && yum clean all\nUSER 1001' -n ${GUID}-jenkins
@@ -33,9 +27,17 @@ sleep 30
 # Tag Jenkins slave ImageStream to latest
 oc tag jenkins-slave-maven-skopeo-centos7 jenkins-slave-maven-skopeo-centos7:latest -n ${GUID}-jenkins
 
-# Sleep 10 seconds and add version 3.9 tag to Jenkins slave ImageStream
-sleep 10
-oc tag jenkins-slave-maven-skopeo-centos7 jenkins-slave-maven-skopeo-centos7:v3.9 -n ${GUID}-jenkins
+# Wait for Jenkins to fully deploy and become ready
+while : ; do
+  echo "Checking if Jenkins pod is Ready..."
+  oc get pod -n ${GUID}-jenkins | grep -v "deploy\|build" | grep -q "1/1"
+  [[ "$?" == "1" ]] || break
+  echo "... not quite yet. Sleeping 20 seconds."
+  sleep 20
+done
+
+# Add version 3.9 tag to Jenkins slave ImageStream
+oc tag jenkins-slave-maven-skopeo-centos7:latest jenkins-slave-maven-skopeo-centos7:v3.9 -n ${GUID}-jenkins
 
 # Label Jenkins slave ImageStream for Jenkins to use for slave builds
 oc label imagestream jenkins-slave-maven-skopeo-centos7 role=jenkins-slave -n ${GUID}-jenkins
