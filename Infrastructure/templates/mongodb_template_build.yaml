@@ -115,7 +115,7 @@ objects:
   kind: Secret
   metadata:
     name: mongodb-secrets
-  data:
+  StringData:
     mongodb-admin-password: "${MONGODB_ADMIN_PASSWORD}" 
   type: Opaque
 - apiVersion: v1
