@@ -3,37 +3,6 @@ kind: Template
 metadata:
   creationTimestamp: null
   name: mongodb-stateful-build
-parameters:
-- description: Random MongoDB admin password.
-  displayName: Mongo DB Admin Password
-  name: MONGODB_ADMIN_PASSWORD
-  required: true
-  value: "ecrGYfg79uYFU"
-- description: MongoDB KeyFile Value.
-  displayName: MongoDB KeyFile Value
-  name: MONGODB_KEYFILE_VALUE
-  required: true
-  value: "47648787tgGUFF67KKGgx"
-- description: MongoDB Database Name.
-  displayName: MongoDB Database
-  name: MONGODB_DATABASE
-  required: true
-  value: parks
-- description: MongoDB User Name.
-  displayName: MongoDB User
-  name: MONGODB_USER
-  required: true
-  value: mongodb
-- description: MongoDB User Password.
-  displayName: MongoDB Password
-  name: MONGODB_PASSWORD
-  required: true
-  value: mongodb
-- description: MongoDB Service Name.
-  displayName: MongoDB Service
-  name: MONGODB_SERVICE
-  required: true
-  value: mongodb-internal
 objects:
 - apiVersion: apps/v1
   kind: StatefulSet
@@ -122,7 +91,7 @@ objects:
   kind: Secret
   metadata:
     name: mongodb-secrets
-  data:
+  stringData:
     mongodb-admin-password: "${MONGODB_ADMIN_PASSWORD}"
     mongodb-keyfile-value: "${MONGODB_KEYFILE_VALUE}"
   type: Opaque
@@ -148,3 +117,37 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
+parameters:
+- description: Random MongoDB admin password.
+  displayName: Mongo DB Admin Password
+  name: MONGODB_ADMIN_PASSWORD
+  required: true
+  from: "[a-zA-Z0-9]{16}"
+  generate: expression
+- description: MongoDB KeyFile Value.
+  displayName: MongoDB KeyFile Value
+  name: MONGODB_KEYFILE_VALUE
+  required: true
+  from: "[a-zA-Z0-9]{16}"
+  generate: expression
+- description: MongoDB Database Name.
+  displayName: MongoDB Database
+  name: MONGODB_DATABASE
+  required: true
+  value: parks
+- description: MongoDB User Name.
+  displayName: MongoDB User
+  name: MONGODB_USER
+  required: true
+  value: mongodb
+- description: MongoDB User Password.
+  displayName: MongoDB Password
+  name: MONGODB_PASSWORD
+  required: true
+  value: mongodb
+- description: MongoDB Service Name.
+  displayName: MongoDB Service
+  name: MONGODB_SERVICE
+  required: true
+  value: mongodb-internal
+
