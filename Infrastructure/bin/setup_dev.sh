@@ -26,7 +26,7 @@ oc new-app mlbparks --name=mlbparks --allow-missing-imagestream-tags=true -n ${G
 # Remoe build triggers from mlbparks deployment config
 oc set triggers dc/mlbparks --remove-all -n ${GUID}-parks-dev
 # Create configmap which will be loaded as env variables
-oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Green)" -n ${GUID}-parks-dev
+oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Blue)" -n ${GUID}-parks-dev
 # Add env variables from configmap to mlbparks deployment config
 oc set env --from=configmap/mongodb-config dc/mlbparks -n ${GUID}-parks-dev
 oc set env --from=configmap/mlbparks-config dc/mlbparks -n ${GUID}-parks-dev
@@ -42,7 +42,7 @@ oc new-app nationalparks --name=nationalparks --allow-missing-imagestream-tags=t
 # Remoe build triggers from nationalparks deployment config
 oc set triggers dc/nationalparks --remove-all -n ${GUID}-parks-dev
 # Create configmap which will be loaded as env variables
-oc create configmap nationalparks-config --from-literal=APPNAME="National Parks (Green)" -n ${GUID}-parks-dev
+oc create configmap nationalparks-config --from-literal=APPNAME="National Parks (Blue)" -n ${GUID}-parks-dev
 # Add env variables from configmaps to nationalparks deployment config
 oc set env --from=configmap/mongodb-config dc/nationalparks -n ${GUID}-parks-dev
 oc set env --from=configmap/nationalparks-config dc/nationalparks -n ${GUID}-parks-dev
@@ -60,11 +60,10 @@ oc new-app parksmap --name=parksmap --allow-missing-imagestream-tags=true -n ${G
 # Remoe build triggers from parksmap deployment config
 oc set triggers dc/parksmap --remove-all -n ${GUID}-parks-dev
 # Create configmap which will be loaded as env variables
-oc create configmap parksmap-config --from-literal=APPNAME="ParksMap(Green)" -n ${GUID}-parks-dev
+oc create configmap parksmap-config --from-literal=APPNAME="ParksMap(Blue)" -n ${GUID}-parks-dev
 # Add env variables from configmaps to nationalparks deployment config
 oc set env --from=configmap/parksmap-config dc/parksmap -n ${GUID}-parks-dev
 # Expose parksmap service on port 8080
 oc expose dc parksmap --port 8080 --labels=type=parksmap -n ${GUID}-parks-dev
 oc expose service parksmap --name=parksmap -n ${GUID}-parks-dev
-
 
