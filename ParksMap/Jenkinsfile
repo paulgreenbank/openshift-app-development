@@ -82,14 +82,14 @@ podTemplate(
     // Blue/Green Deployment into Dev
     // -------------------------------------
     // Do not activate the new version yet.
-    def destDevColour = "Green"
-    def activeDevColour = "Blue"
+    def destDevColour = "Blue"
+    def activeDevColour = "Green"
 
     stage('Blue/Green Dev Deployment') {
       // Logic to identify next deployment colour (blue or green)
       activeDevColour = sh(returnStdout: true, script: "oc get service parksmap -n ${GUID}-parks-dev -o 'jsonpath={ .metadata.labels.activeDevColour }' --ignore-not-found=true").trim()
-      if (activeDevColour == "Green") {
-        destDevColour = "Blue"
+      if (activeDevColour == "Blue") {
+        destDevColour = "Green"
       }
 
       // Deploy the built image to the Development Environment.
@@ -131,17 +131,17 @@ podTemplate(
     // Blue/Green Deployment into Production
     // -------------------------------------
     // Do not activate the new version yet.
-    def destApp   = "parksmap-green"
-    def destColour = "Green"
-    def activeApp = "parksmap-blue"
-    def activeColour = "Blue"
+    def destApp   = "parksmap-blue"
+    def destColour = "Blue"
+    def activeApp = "parksmap-green"
+    def activeColour = "Green"
 
     stage('Blue/Green Production Deployment') {
       // Logic to identify next deployment colour (blue or green)
       activeApp = sh(returnStdout: true, script: "oc get route parksmap -n ${GUID}-parks-prod -o jsonpath='{ .spec.to.name }' --ignore-not-found=true").trim()
-      if (activeApp == "parksmap-green") {
-        destApp = "parksmap-blue"
-        destColour = "Blue"
+      if (activeApp == "parksmap-blue") {
+        destApp = "parksmap-green"
+        destColour = "Green"
       }
       echo "Active Application:      " + activeApp
       echo "Destination Application: " + destApp

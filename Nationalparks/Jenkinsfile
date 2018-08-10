@@ -82,14 +82,14 @@ podTemplate(
     // Blue/Green Deployment into Dev
     // -------------------------------------
     // Do not activate the new version yet.
-    def destDevColour = "Green"
-    def activeDevColour = "Blue"
+    def destDevColour = "Blue"
+    def activeDevColour = "Green"
 
     stage('Blue/Green Dev Deployment') {
       // Logic to identify next deployment colour (blue or green)
       activeDevColour = sh(returnStdout: true, script: "oc get service nationalparks -n ${GUID}-parks-dev -o 'jsonpath={ .metadata.labels.activeDevColour }' --ignore-not-found=true").trim()
-      if (activeDevColour == "Green") {
-        destDevColour = "Blue"
+      if (activeDevColour == "Blue") {
+        destDevColour = "Green"
       }
       echo "Deploying container image to Development Project"
       // Set Deployment image to correct version
@@ -129,17 +129,17 @@ podTemplate(
     // Blue/Green Deployment into Production
     // -------------------------------------
     // Do not activate the new version yet.
-    def destApp   = "nationalparks-green"
-    def destColour = "Green"
-    def activeApp = "nationalparks-blue"
-    def activeColour = "Blue"
+    def destApp   = "nationalparks-blue"
+    def destColour = "Blue"
+    def activeApp = "nationalparks-green"
+    def activeColour = "Green"
 
     stage('Blue/Green Production Deployment') {
       // Logic to identify next deployment colour (blue or green)
       activeApp = sh(returnStdout: true, script: "oc get service nationalparks -n ${GUID}-parks-prod -o 'jsonpath={ .spec.selector.app }' --ignore-not-found=true").trim()
-      if (activeApp == "nationalparks-green") {
-        destApp = "nationalparks-blue"
-        destColour = "Blue"
+      if (activeApp == "nationalparks-blue") {
+        destApp = "nationalparks-green"
+        destColour = "Green"
       }
       echo "Active Application:      " + activeApp
       echo "Destination Application: " + destApp
