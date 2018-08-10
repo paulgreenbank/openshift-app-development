@@ -96,7 +96,7 @@ podTemplate(
       sh "oc set image dc/nationalparks nationalparks=docker-registry.default.svc:5000/${GUID}-parks-dev/nationalparks:${devTag} -n ${GUID}-parks-dev"
       // Update configMap used to set build (blue/green) deployment
       sh "oc delete configmap nationalparks-config -n ${GUID}-parks-dev --ignore-not-found"
-      sh "oc create configmap nationalparks-config -n ${GUID}-parks-dev --from-literal=APPNAME='National Parks (${destDevColour})'"
+      sh "oc create configmap nationalparks-config -n ${GUID}-parks-dev --from-literal=APPNAME='National Parks (Dev)' --from-literal=DEPLOYNAME='${destDevColour}'"
       // Deploy image
       openshiftDeploy depCfg: 'nationalparks', namespace: "${GUID}-parks-dev", verbose: 'false', waitTime: '', waitUnit: 'sec'
       // Verify Deployment
