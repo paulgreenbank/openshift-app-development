@@ -14,7 +14,7 @@ echo "Setting up Jenkins in project ${GUID}-jenkins from Git Repo ${REPO} for Cl
 
 # Create master Jenkins build
 #oc new-app jenkins-persistent --param ENABLE_OAUTH=true --param MEMORY_LIMIT=2Gi --param VOLUME_CAPACITY=4Gi -n ${GUID}-jenkins
-oc new-app jenkins-persistent --param ENABLE_OAUTH=true --param MEMORY_LIMIT=3Gi --param VOLUME_CAPACITY=5Gi -n ${GUID}-jenkins
+oc new-app jenkins-persistent --param ENABLE_OAUTH=true --param MEMORY_LIMIT=5Gi --param VOLUME_CAPACITY=4Gi -n ${GUID}-jenkins
 
 # Adjust readiness probe for Jenkins
 oc set probe dc jenkins --readiness --initial-delay-seconds=300 -n ${GUID}-jenkins
