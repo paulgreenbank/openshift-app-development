@@ -26,7 +26,7 @@ oc new-app mlbparks-blue --name=mlbparks-blue --allow-missing-imagestream-tags=t
 # Remove build triggers from mlbparks-blue deployment config
 oc set triggers dc/mlbparks-blue --remove-all -n ${GUID}-parks-prod
 # Create configmap which will be loaded as env variables
-oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Blue)" -n ${GUID}-parks-prod
+oc create configmap mlbparks-config --from-literal=APPNAME="MLB Parks (Green)" -n ${GUID}-parks-prod
 # Add env variables from configmap to mlbparks-blue deployment config
 oc set env --from=configmap/mongodb-config dc/mlbparks-blue -n ${GUID}-parks-prod
 oc set env --from=configmap/mlbparks-config dc/mlbparks-blue -n ${GUID}-parks-prod
@@ -54,7 +54,7 @@ oc new-app nationalparks-blue --name=nationalparks-blue --allow-missing-imagestr
 # Remove build triggers from nationalparks-blue deployment config
 oc set triggers dc/nationalparks-blue --remove-all -n ${GUID}-parks-prod
 # Create configmap which will be loaded as env variables
-oc create configmap nationalparks-config --from-literal=APPNAME="MLB Parks (Blue)" -n ${GUID}-parks-prod
+oc create configmap nationalparks-config --from-literal=APPNAME="MLB Parks (Green)" -n ${GUID}-parks-prod
 # Add env variables from configmap to nationalparks-blue deployment config
 oc set env --from=configmap/mongodb-config dc/nationalparks-blue -n ${GUID}-parks-prod
 oc set env --from=configmap/nationalparks-config dc/nationalparks-blue -n ${GUID}-parks-prod
@@ -84,7 +84,7 @@ oc new-app parksmap-blue --name=parksmap-blue --allow-missing-imagestream-tags=t
 # Remoe build triggers from parksmap deployment config
 oc set triggers dc/parksmap-blue --remove-all -n ${GUID}-parks-prod
 # Create configmap which will be loaded as env variables
-oc create configmap parksmap-config --from-literal=APPNAME="ParksMap (Blue)" -n ${GUID}-parks-prod
+oc create configmap parksmap-config --from-literal=APPNAME="ParksMap (Green)" -n ${GUID}-parks-prod
 # Add env variables from configmap to nationalparks-blue deployment config
 oc set env --from=configmap/parksmap-config dc/parksmap-blue -n ${GUID}-parks-prod
 # Expose parksmap-blue service on port 8080
