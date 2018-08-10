@@ -118,7 +118,7 @@ podTemplate(
       // Curl status of application with /wz/health/ URL
       sh "curl http://parksmap.${GUID}-parks-dev.svc:8080/ws/healthz/ | grep -q 'OK'"
       // Test external route with APPNAME from URL
-      sh "curl http://parksmap-${GUID}-parks-dev.apps.${CLUSTER}/ws/appname/ | grep -q 'ParksMap (${destDevColour})'"
+      sh "curl http://parksmap-${GUID}-parks-dev.apps.${CLUSTER}/ws/appname/ | grep -q 'ParksMap (Dev)'"
     }
 
     // Copy Image to Nexus Docker Registry
