@@ -8,8 +8,8 @@ podTemplate(
     containerTemplate(
       name: "jnlp",
       image: "docker-registry.default.svc:5000/${GUID}-jenkins/jenkins-slave-maven-skopeo-centos7:v3.9",
-      resourceRequestMemory: "2Gi",
-      resourceLimitMemory: "3Gi"
+      resourceRequestMemory: "1Gi",
+      resourceLimitMemory: "2Gi"
     )
   ]
 ) {
